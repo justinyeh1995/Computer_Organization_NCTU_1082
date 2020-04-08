@@ -33,8 +33,8 @@ wire          overflow_out;
 
 wire  [3-1:0] zcv_out;
 wire [32-1:0] result_correct;
-wire  [8-1:0] zcv_correct;
-wire  [8-1:0] opcode_tmp;
+wire  [3-1:0] zcv_correct;
+wire  [4-1:0] opcode_tmp;
 
 	assign zcv_out = {zero_out, cout_out, overflow_out};
 	assign opcode_tmp = mem_opcode[pattern_count];
@@ -52,7 +52,7 @@ initial begin
 	operation_in = 4'h0;
 	start_check = 1'd0;
 	error_count = 6'd0;
-        correct_count = 6'd0;
+    correct_count = 6'd0;
 	error_count_tmp = 6'd0;
 	pattern_count = 6'd0;
 
@@ -82,8 +82,7 @@ alu alu(
 
 always@(posedge clk) begin
 	if(pattern_count == (PATTERN_NUMBER+1)) begin
-		if(error_count == 5'd0) begin
-			$display("***************************************************");
+		if(error_count == 6'd0) begin
 			$display("*      Congratulation! All data are correct!      *");
 			$display("***************************************************");
             $display("Correct Count: %2d", correct_count );
@@ -155,7 +154,7 @@ always@(posedge clk) begin
 							mem_src2[4*pattern_count + 6'd2],
 							mem_src2[4*pattern_count + 6'd1],
 							mem_src2[4*pattern_count + 6'd0]};
-		operation_in	<= opcode_tmp[4-1:0];
+		operation_in	<= opcode_tmp;
 		pattern_count	<= pattern_count + 6'd1;
 	end
 end
@@ -167,22 +166,14 @@ always@(posedge clk) begin
 			$display("*             PATTERN RESULT TABLE                *");
 			$display("***************************************************");
 			$display("* PATTERN *              Result             * ZCV *");
+			$display("***************************************************");
 		end
 		else if(pattern_count < (PATTERN_NUMBER+1)) begin
 			if(result_out == result_correct) begin
-				if(((mem_opcode[pattern_count-1] == 4'd2) || (mem_opcode[pattern_count-1] == 4'd6)) && (zcv_out != zcv_correct[3-1:0])) begin
-					$display("***************************************************");
-					$display(" No.%2d error!",pattern_count);
-					$display(" Correct result: %h     Correct ZCV: %b",result_correct, zcv_correct[3-1:0]);
-					$display(" Your result: %h        Your ZCV: %b\n",result_out, zcv_out);
-					$display("***************************************************");
-					error_count <= error_count + 6'd1;
-				end
-				else if(zcv_out[2] != zcv_correct[2]) begin
-					$display("***************************************************");
-					$display(" No.%2d error!",pattern_count);
-					$display(" Correct result: %h     Correct ZCV: %b",result_correct, zcv_correct[3-1:0]);
-					$display(" Your result: %h        Your ZCV: %b\n",result_out, zcv_out);
+				if(zcv_out != zcv_correct) begin
+					$display("* No.%2d error!                                    *",pattern_count);
+					$display("* Correct result: %h     Correct ZCV: %b   *",result_correct, zcv_correct[3-1:0]);
+					$display("* Your result: %h        Your ZCV: %b      *",result_out, zcv_out);
 					$display("***************************************************");
 					error_count <= error_count + 6'd1;
 				end
@@ -191,21 +182,9 @@ always@(posedge clk) begin
                 end
 			end
 			else begin
-				$display("***************************************************");
-				case(mem_opcode[pattern_count-1])
-				    4'd13:	$display(" NAND error! ");
-					4'd0:	$display(" AND error! ");
-					4'd1:	$display(" OR error! ");
-					4'd2:	$display(" ADDU error! ");
-					4'd6:	$display(" SUBU error! ");
-					4'd0:   $display(" SLTU error! ");
-					4'd12:	$display(" NOR error! ");
-					default: begin
-					end
-				endcase
-				$display(" No.%2d error!",pattern_count);
-				$display(" Correct result: %h     Correct ZCV: %b",result_correct, zcv_correct[3-1:0]);
-				$display(" Your result: %h     Your ZCV: %b\n",result_out, zcv_out);
+				$display("* No.%2d error!                                    *",pattern_count);
+				$display("* Correct result: %h     Correct ZCV: %b   *",result_correct, zcv_correct[3-1:0]);
+				$display("* Your result: %h        Your ZCV: %b      *",result_out, zcv_out);
 				$display("***************************************************");
 				error_count <= error_count + 6'd1;
 			end
