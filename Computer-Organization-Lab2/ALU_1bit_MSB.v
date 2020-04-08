@@ -28,18 +28,24 @@ wire SUM = in1 ^ in2 ^ Cin;
 always @* 
 	begin
 		case(operation)
-			2'd0: result <= AND;
-			2'd1: result <= OR;
-			2'd2: result <= SUM;
-			2'd3: result <= less;
+			2'd0: begin result <= AND; cout <= 0; set <= 0; overflow <=0; end
+			2'd1: begin result <= OR; cout <= 0; set <= 0; overflow <=0; end
+			2'd2: 
+				begin
+					result <= SUM;
+					cout <=  in1&in2 | in1&Cin | in2&Cin;
+					set  <= SUM;    
+					overflow <= Cin ^ cout; // Cin xor Cout to detect overflow
+				end
+			2'd3: 
+				begin
+					result <= less;
+					cout <=  in1&in2 | in1&Cin | in2&Cin;
+					set  <= SUM;    
+					overflow <= Cin ^ cout; // Cin xor Cout to detect overflow
+				end
 		endcase
 	end
 
-always @* 
-	begin
-		cout <=  in1&in2 | in1&Cin | in2&Cin;
-		set  <= SUM;    
-		overflow <= Cin ^ cout; // Cin xor Cout to detect overflow
-	end
 
 endmodule
