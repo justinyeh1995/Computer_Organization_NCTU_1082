@@ -107,7 +107,7 @@ always @*
 			
 			end
 		
-		default: result <= 32'b00000000000000000000000000000000; 
+		default: result <= 32'd0; 
 
 	endcase
 
