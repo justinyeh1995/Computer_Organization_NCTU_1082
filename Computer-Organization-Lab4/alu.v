@@ -34,61 +34,61 @@ always @*
 		4'b0000: 
 			begin 
 				Result <= src1 & src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 		/* OR :1*/	
 		4'b0001: 
 			begin 
 				Result <= src1 | src2; 
-				Zero <= (Result == 0)?1:0;  
+				Zero <= (src1 == src2)?1:0;  
 			end
 		/* ADD :2*/
 		4'b0010: 
 			begin
 				Result <= src1 + src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 		/* SUB :6*/
 		4'b0110: 
 			begin
 				Result <= src1 - src2;
-				Zero <= (Result == 0)?1:0; 	
+				Zero <= (src1 == src2)?1:0; 	
 			end
 		/* SLT :7*/
 		4'b0111: 
 			begin
 				Result <= (src1 < src2)?1:0;
-				Zero <= (Result == 0)?1:0; 	   
+				Zero <= (src1 == src2)?1:0; 	   
 			end
 		/* NOR :12*/
 		4'b1100: 
 			begin
 				Result <= ~(src1 | src2);
-				Zero <= (Result == 0)?1:0; 	
+				Zero <= (src1 == src2)?1:0; 	
 			end
 		/* XOR :13*/
 		4'b1101: 
 			begin
 				Result <= src1 ^ src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 		/* SLL :3*/
 		4'b0011: 
 			begin
 				Result <= src1 << src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 		/* SRL :4*/
 		4'b0100: 
 			begin
 				Result <= src1 >> src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 		/* SRA :5*/
 		4'b0101: 
 			begin
 				Result <= src1 >>> src2;
-				Zero <= (Result == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			
 			end
 
@@ -96,14 +96,14 @@ always @*
 		4'b1010: 
 			begin
 				Result <= src1 - src2;
-				Zero <= ((src1 - src2) == 0)?1:0; 
+				Zero <= (src1 == src2)?1:0; 
 			end
 
 		/* BNE :11*/
 		4'b1011: 
 			begin
 				Result <= src1 - src2;
-				Zero <= ((src1 - src2) == 0)?0:1;
+				Zero <= (src1 == src2)?0:1;
 			
 			end
 		

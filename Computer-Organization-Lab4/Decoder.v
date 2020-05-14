@@ -60,12 +60,12 @@ always@ *
 		/* JAL-type */
 		7'b1101111:
 			begin
-				alusrc <= 1; memtoReg <= 0; regwrite <= 1; memRead <= 0; memWrite <= 0; branch <= 0; ALU_OP <= 2'b11; jump <= 2'b01;
+				alusrc <= 0; memtoReg <= 0; regwrite <= 1; memRead <= 0; memWrite <= 0; branch <= 0; ALU_OP <= 2'b11; jump <= 2'b01;
 			end
 		/* JALR-type */
 		7'b1100111:
 			begin
-				alusrc <= 1; memtoReg <= 0; regwrite <= 1; memRead <= 0; memWrite <= 0; branch <= 0; ALU_OP <= 2'b11; jump <= 2'b10;
+				alusrc <= 0; memtoReg <= 0; regwrite <= 1; memRead <= 0; memWrite <= 0; branch <= 0; ALU_OP <= 2'b11; jump <= 2'b10;
 			end
 		default: 
 			begin
