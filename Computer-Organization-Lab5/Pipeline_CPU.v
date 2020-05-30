@@ -59,6 +59,12 @@ wire [32-1:0] RSData_ID_EX_o;
 wire [32-1:0] RTData_ID_EX_o;
 wire [5-1:0] RD_ID_EX_o;
 
+/* Fowarding unit input*/
+wire [5-1:0] Rs1_IF_ID_o;
+wire [5-1:0] Rs2_IF_ID_o;
+wire [2-1:0]  select_Foward_A;
+wire [2-1:0]  select_Foward_B;
+
 /*Shift-Left 1*/
 wire [31:0] shift_res;
 
@@ -67,6 +73,12 @@ wire [31:0] addr2_o;
 
 /*Mux ALUSrc output*/
 wire [31:0] src2;
+
+/*Mux_Foward_A output*/
+wire [32-1:0] Forward_A_o;
+
+/*Mux_Foward_B output*/
+wire [32-1:0] Forward_B_o;
 
 /*ALU*/
 wire [31:0] ALUresult;
@@ -104,6 +116,12 @@ wire  [5-1:0]   RD_MEM_WB_o;
 /*Mux MemtoReg*/
 wire [31:0] Mux_MemtoReg_o;
 
+MUX_2to1 Mux_OringinalPCSrc(
+		.data0_i(addr1_o),       
+		.data1_i(PCplusImm_EX_MEM_o),
+		.select_i(originalPCSrc),
+		.data_o(mux_oringinalPCSrc_o)
+		);	
 
 ProgramCounter PC(
             .clk_i(clk_i),      
@@ -183,6 +201,10 @@ ID_EX_pipeline_reg ID_EX(
         .Imm_Gen_i(Imm_Gen_o),
 	.ALU_Ctrl_i(alu_ctrl_instr_IF_ID),
 	.RDaddr_i(IF_ID_instr_o[11:7]), // rd number
+	
+	/* Fowarding input*/
+	.Rs1_IF_ID_i(IF_ID_instr_o[19:15]),
+	.Rs2_IF_ID_i(IF_ID_instr_o[24:20]),
 
 	/*Control signal output*/
 	.ALUSrc_o(ALUSrc_ID_EX_o),
@@ -200,7 +222,11 @@ ID_EX_pipeline_reg ID_EX(
         .RTdata_o(RTData_ID_EX_o),
 	.Imm_Gen_o(Imm_Gen_ID_EX_o),
 	.ALU_Ctrl_o(alu_ctrl_instr_ID_EX_o),
-	.RDaddr_o(RD_ID_EX_o)
+	.RDaddr_o(RD_ID_EX_o),
+
+	/* Fowarding output*/
+	.Rs1_IF_ID_o(Rs1_IF_ID_o),
+	.Rs2_IF_ID_o(Rs2_IF_ID_o)
 );
 
 	
@@ -228,11 +254,26 @@ Adder Adder2(
 	    .src2_i(shift_res),     
 	    .sum_o(addr2_o)    
 	    );
-		
+
+MUX_3to1 Mux_Foward_A(
+		.data0_i(RSData_ID_EX_o),       
+		.data1_i(Mux_MemtoReg_o),
+		.data2_i(alu_result_EX_MEM_o),
+		.select_i(select_Foward_A),
+		.data_o(Forward_A_o)
+		);
+
+MUX_3to1 Mux_Forward_B(
+		.data0_i(src2),       
+		.data1_i(Mux_MemtoReg_o),
+		.data2_i(alu_result_EX_MEM_o),
+		.select_i(select_Foward_B),
+		.data_o(Forward_B_o)
+		);	
 alu alu(
 	.rst_n(rst_i),
-	.src1(RSData_ID_EX_o),
-	.src2(src2),
+	.src1(Forward_A_o),
+	.src2(Forward_B_o),
 	.ALU_control(alu_ctrl),
 	.zero(zero),
 	.result(ALUresult),
@@ -240,6 +281,18 @@ alu alu(
 	.overflow(overflow)
         );
 
+Forwarding_Unit FU(
+	.clk_i(clk_i),      
+	.rst_i(rst_i),
+	.Rs1_ID_EX(Rs1_IF_ID_o),
+	.Rs2_ID_EX(Rs2_IF_ID_o),
+	.Rd_EX_MEM(RD_EX_MEM_o),
+	.Rd_MEM_WB(RD_MEM_WB_o),
+	.RegWrite_EX_MEM(RegWrite_EX_MEM_o),
+	.RegWrite_MEM_WB(RegWrite_MEM_WB_o),
+	.Forward_A(select_Foward_A),
+	.Forward_B(select_Foward_B)
+);
 // EX/MEM
 EX_MEM_pipeline_reg EX_MEM(
 	.clk_i(clk_i),      
@@ -257,7 +310,7 @@ EX_MEM_pipeline_reg EX_MEM(
         .PC_add_sum_i(addr2_o),
         .zero_i(zero),
         .alu_result_i(ALUresult),
-	.RTdata_i(RTData_ID_EX_o),
+	.RTdata_i(Forward_B_o),
 	.RDaddr_i(RD_ID_EX_o),
 
 	/*Control signal output*/
@@ -285,12 +338,6 @@ Data_Memory Data_Memory(
 		.data_o(DM_o)
 		);	
 
-MUX_2to1 Mux_OringinalPCSrc(
-		.data0_i(addr1_o),       
-		.data1_i(PCplusImm_EX_MEM_o),
-		.select_i(originalPCSrc),
-		.data_o(mux_oringinalPCSrc_o)
-		);	
 
 /*MEM/WB*/
 MEM_WB_pipeline_reg MEM_WB(
@@ -341,10 +388,13 @@ MUX_2to1 Mux_MemtoReg(
 		.select_i(MemtoReg_EX_MEM_o),
 		.data_o(Mux_MemtoReg_o)
 		);
-//always@(instr)
-//begin 
-//$display("%0dns :\$display: Instruction = %32b "  , $stime, instr);
-//end	
+always@(*)
+begin 
+//$display("%0dns :\$display: 2nd Stage RSdata_o  = %32b RTdata_o = %32b"  , $stime, RSdata_o, RSdata_o );
+$display("%0dns :\$display: 3rd Stage Forward_A_o = %32b Forward_B_o = %32b"  , $stime, Forward_A_o, Forward_B_o);
+$display("%0dns :\$display: 4th Stage alu_result_EX_MEM_o = %32b"  , $stime, alu_result_EX_MEM_o);
+$display("%0dns :\$display: 5th Stage RD_MEM_WB_o = %5b MemtoReg_EX_MEM_o = %1b Mux_MemtoReg_o = %32b"  , $stime, RD_MEM_WB_o, MemtoReg_EX_MEM_o, Mux_MemtoReg_o);
+end	
 endmodule
 		  
 
