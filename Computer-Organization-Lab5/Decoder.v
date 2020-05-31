@@ -69,7 +69,7 @@ always@ *
 			end
 		default: 
 			begin
-				alusrc <= 1'bx; memtoReg <= 1'bx; regwrite <= 1'bx; memRead <= 1'bx; memWrite <= 1'bx; branch <= 1'bx; ALU_OP <= 2'bxx; jump <= 2'bxx;
+				alusrc <= 1'bx; memtoReg <= 1'b0; regwrite <= 1'bx; memRead <= 1'bx; memWrite <= 1'bx; branch <= 1'b0; ALU_OP <= 2'bxx; jump <= 2'bxx;
 			end
 	endcase
 //$display("%0dns :\$display: Opcode = %7b ALUSrc=%b RegWrite=%b Branch =%b ALUOp =%2b"  , $stime, instr_i[7-1:0], alusrc, regwrite, branch, ALU_OP);

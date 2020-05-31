@@ -22,7 +22,7 @@ reg signed [32-1:0] Reg_File [0:32-1];
 assign RSdata_o = Reg_File[RSaddr_i] ;
 assign RTdata_o = Reg_File[RTaddr_i] ;   
 
-always @(posedge clk_i) begin
+always @(negedge clk_i) begin
     if(~rst_i) begin
 	Reg_File[0]  <= 0; Reg_File[1]  <= 0; Reg_File[2]  <= 128; Reg_File[3]  <= 0;
 	Reg_File[4]  <= 0; Reg_File[5]  <= 0; Reg_File[6]  <= 0; Reg_File[7]  <= 0;
