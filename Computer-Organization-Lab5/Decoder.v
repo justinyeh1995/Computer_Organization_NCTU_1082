@@ -67,6 +67,7 @@ always@ *
 			begin
 				alusrc <= 0; memtoReg <= 0; regwrite <= 1; memRead <= 0; memWrite <= 0; branch <= 0; ALU_OP <= 2'b11; jump <= 2'b10;
 			end
+		/* Might need to be commented out after all*/		
 		default: 
 			begin
 				alusrc <= 1'bx; memtoReg <= 1'b0; regwrite <= 1'bx; memRead <= 1'bx; memWrite <= 1'bx; branch <= 1'b0; ALU_OP <= 2'bxx; jump <= 2'bxx;
