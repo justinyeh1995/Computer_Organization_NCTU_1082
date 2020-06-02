@@ -44,7 +44,7 @@ always@ *
 		/* S-type */
 		7'b0100011:
 			begin
-				alusrc <= 1; memtoReg <= 1'bx; regwrite <= 0; memRead <= 1; memWrite <= 1; branch <= 0; ALU_OP <= 2'b00; jump <= 2'b00;
+				alusrc <= 1; memtoReg <= 1'bx; regwrite <= 0; memRead <= 0; memWrite <= 1; branch <= 0; ALU_OP <= 2'b00; jump <= 2'b00;
 			end
 		/* SB-type */
 		7'b1100011:
