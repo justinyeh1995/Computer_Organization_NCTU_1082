@@ -236,12 +236,6 @@ Shift_Left_1 SL1(
 		.data_o(shift_res)
 		);
 	
-MUX_2to1 Mux_ALUSrc(
-		.data0_i(RTData_ID_EX_o),       
-		.data1_i(Imm_Gen_ID_EX_o),
-		.select_i(ALUSrc_ID_EX_o),
-		.data_o(src2)
-		);
 			
 ALU_Ctrl ALU_Ctrl(
 		.instr(alu_ctrl_instr_ID_EX_o),
@@ -264,16 +258,24 @@ MUX_3to1 Mux_Foward_A(
 		);
 
 MUX_3to1 Mux_Forward_B(
-		.data0_i(src2),       
+		.data0_i(RTData_ID_EX_o),       
 		.data1_i(Mux_MemtoReg_o),
 		.data2_i(alu_result_EX_MEM_o),
 		.select_i(select_Foward_B),
 		.data_o(Forward_B_o)
 		);	
+
+MUX_2to1 Mux_ALUSrc(
+		.data0_i(Forward_B_o),       
+		.data1_i(Imm_Gen_ID_EX_o),
+		.select_i(ALUSrc_ID_EX_o),
+		.data_o(src2)
+		);
+
 alu alu(
 	.rst_n(rst_i),
 	.src1(Forward_A_o),
-	.src2(Forward_B_o),
+	.src2(src2),
 	.ALU_control(alu_ctrl),
 	.zero(zero),
 	.result(ALUresult),
@@ -310,14 +312,14 @@ EX_MEM_pipeline_reg EX_MEM(
         .PC_add_sum_i(addr2_o),
         .zero_i(zero),
         .alu_result_i(ALUresult),
-	.RTdata_i(Forward_B_o),
+	.RTdata_i(Forward_B_o),// might have problem mux 2-to-1 & mux 3-t0-1 needs to reverse
 	.RDaddr_i(RD_ID_EX_o),
 
 	/*Control signal output*/
 	.MemtoReg_o(MemtoReg_EX_MEM_o),
 	.RegWrite_o(RegWrite_EX_MEM_o),
 	.MemRead_o(MemRead_EX_MEM_o),
-	.MemWrite_o(MemWrite_EX_MEM_),
+	.MemWrite_o(MemWrite_EX_MEM_o),
 	.Branch_o(Branch_EX_MEM_o),
 	//Jump_o // not addressed in Lab5
 
@@ -390,10 +392,15 @@ MUX_2to1 Mux_MemtoReg(
 		);
 always@(*)
 begin 
+$display(" 1st Stage Instruction = %32b", instr);
+$display("%0dns :\$display: 2nd Stage MemWrite_ID_EX_o = %b"  , $stime, MemWrite_ID_EX_o );
+//$display(" 3rd Stage pc_ID_EX_o=%32b shift_res = %32b addr2_o = %32b", pc_ID_EX_o, shift_res, addr2_o);
+//$display(" 4th Stage originalPCSrc = %b", originalPCSrc);
+//$display(" 4th Stage PCplusImm_EX_MEM_o = %32b", PCplusImm_EX_MEM_o);
 //$display("%0dns :\$display: 2nd Stage RSdata_o  = %32b RTdata_o = %32b"  , $stime, RSdata_o, RSdata_o );
-$display("%0dns :\$display: 3rd Stage Forward_A_o = %32b Forward_B_o = %32b"  , $stime, Forward_A_o, Forward_B_o);
-$display("%0dns :\$display: 4th Stage alu_result_EX_MEM_o = %32b"  , $stime, alu_result_EX_MEM_o);
-$display("%0dns :\$display: 5th Stage RD_MEM_WB_o = %5b MemtoReg_EX_MEM_o = %1b Mux_MemtoReg_o = %32b"  , $stime, RD_MEM_WB_o, MemtoReg_EX_MEM_o, Mux_MemtoReg_o);
+//$display("%0dns :\$display: 3rd Stage Forward_A_o = %32b Forward_B_o = %32b"  , $stime, Forward_A_o, Forward_B_o);
+$display("%0dns :\$display: 4th Stage alu_result_EX_MEM_o = %32b RTdata_EX_MEM_o= %32b  MemWrite_EX_MEM_o =%b, MemRead_EX_MEM_o =%b"  , $stime, alu_result_EX_MEM_o, RTdata_EX_MEM_o, MemWrite_EX_MEM_o, MemRead_EX_MEM_o);
+$display("%0dns :\$display: 5th Stage RD_MEM_WB_o = %5b MemtoReg_MEM_WB_o = %1b alu_result_MEM_WB_o = %32b DM_MEM_WB_o = %32b Mux_MemtoReg_o = %32b"  , $stime, RD_MEM_WB_o, MemtoReg_MEM_WB_o, alu_result_MEM_WB_o,DM_MEM_WB_o, Mux_MemtoReg_o);
 end	
 endmodule
 		  
