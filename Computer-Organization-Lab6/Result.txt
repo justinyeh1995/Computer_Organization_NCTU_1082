@@ -1,0 +1,5 @@
+16-N Way
+Cache_size:4K
+Block_size:256
+Hit rate: 98.85% (6377),  Miss rate: 1.15% (74)
+
